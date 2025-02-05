@@ -16,6 +16,7 @@ const FeedbackForm = lazy(() => import("../pages/feedback/FeedbackForm"));
 const CompanyManagement = lazy(() =>
   import("../pages/company/CompanyManagement")
 );
+const RegistrationForm = lazy(() => import("../pages/auth/Registration"));
 const RoleBasedNavigation = lazy(() => "../pages/roles/RolesBasedNavigation");
 
 const Login = lazy(() => import("../pages/auth/Login"));
@@ -73,6 +74,11 @@ export const routes = [
   {
     path: "/login",
     element: Login,
+    private: false,
+  },
+  {
+    path: "/register",
+    element: RegistrationForm,
     private: false,
   },
   {
