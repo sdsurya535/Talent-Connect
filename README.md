@@ -58,7 +58,7 @@ Ensure you have the following installed:
    ```sh
    yarn dev
    ```
-5. Open your browser and go to `http://localhost:3000`
+5. Open your browser and go to `http://localhost:5173`
 
 ## Key Features
 - **User Authentication:** Secure login and registration system.
@@ -69,7 +69,7 @@ Ensure you have the following installed:
 
 ## Technologies Used
 - **Frontend:** React.js, Tailwind CSS
-- **Backend:** Node.js, Express.js (if applicable)
+- **Backend:** Python, FAST API (if applicable)
 - **Database:** MySQL/MongoDB (if applicable)
 - **State Management:** React Context/Redux (if applicable)
 
