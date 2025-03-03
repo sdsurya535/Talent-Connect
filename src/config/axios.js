@@ -3,7 +3,8 @@ import { getAccessToken } from "../utils/tokenService";
 
 const axiosInstance = axios.create({
   // baseURL: "http://localhost:5000/api",
-  baseURL: "http://192.168.0.136:8000",
+  baseURL: import.meta.env.VITE_API_URL,
+  // baseURL: "https://erpapi.eduskillsfoundation.org",
   timeout: 10000,
 });
 

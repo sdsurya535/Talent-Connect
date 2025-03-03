@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -24,36 +24,83 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react";
+import toast from "react-hot-toast";
 import AddCompanyForm from "./AddCompanyForm";
+import { useApi } from "@/hooks/useApi";
 
-// Dummy data
-const initialCompanies = [
-  {
-    id: 1,
-    name: "Tech Corp",
-    address: "123 Tech Street, Silicon Valley",
-    createdDate: "2024-01-15",
-    updatedDate: "2024-01-20",
-    status: "active",
-  },
-  // ... (previous dummy data)
-];
+// Skeleton loader component for table rows
+const TableRowSkeleton = () => (
+  <TableRow>
+    <TableCell>
+      <Skeleton className="h-4 w-8" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-40" />
+    </TableCell>
+    <TableCell className="hidden md:table-cell">
+      <Skeleton className="h-4 w-48" />
+    </TableCell>
+    <TableCell className="hidden sm:table-cell">
+      <Skeleton className="h-4 w-24" />
+    </TableCell>
+    <TableCell className="hidden lg:table-cell">
+      <Skeleton className="h-4 w-32" />
+    </TableCell>
+    <TableCell className="hidden lg:table-cell">
+      <Skeleton className="h-4 w-32" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-4 w-16" />
+    </TableCell>
+  </TableRow>
+);
 
 const CompanyTable = () => {
-  const [companies, setCompanies] = useState(initialCompanies);
+  const [companies, setCompanies] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
+  const { sendRequest, loading } = useApi();
+
+  // Format date helper function
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Fetch companies
+  const fetchCompanies = async () => {
+    try {
+      const response = await sendRequest({
+        method: "GET",
+        url: "/talent/connect/companies",
+      });
+      setCompanies(response.companyResponse || []);
+    } catch (error) {
+      toast.error("Failed to fetch companies");
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   // Filter companies based on search and status
   const filteredCompanies = companies.filter((company) => {
     const matchesSearch =
-      company.name.toLowerCase().includes(search.toLowerCase()) ||
-      company.address.toLowerCase().includes(search.toLowerCase());
+      company.company_name.toLowerCase().includes(search.toLowerCase()) ||
+      company.company_addr.toLowerCase().includes(search.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || company.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -67,47 +114,65 @@ const CompanyTable = () => {
   );
 
   // Handle adding/editing company
-  const handleSubmit = (formData) => {
-    const currentDate = new Date().toISOString().split("T")[0];
+  const handleSubmit = async (formData) => {
+    const loadingToast = toast.loading(
+      editingCompany ? "Updating company..." : "Creating company..."
+    );
 
-    if (editingCompany) {
-      setCompanies(
-        companies.map((company) =>
-          company.id === editingCompany.id
-            ? {
-                ...company,
-                ...formData,
-                updatedDate: currentDate,
-              }
-            : company
-        )
-      );
-    } else {
-      const newId = Math.max(...companies.map((c) => c.id)) + 1;
-      setCompanies([
-        ...companies,
-        {
-          ...formData,
-          id: newId,
-          createdDate: currentDate,
-          updatedDate: currentDate,
-        },
-      ]);
+    try {
+      if (editingCompany) {
+        await sendRequest({
+          method: "PUT",
+          url: `/companies/${editingCompany.id}`,
+          data: {
+            companyName: formData.name,
+            companyAddress: formData.address,
+            status: formData.status,
+          },
+        });
+        toast.success("Company updated successfully", { id: loadingToast });
+      } else {
+        await sendRequest({
+          method: "POST",
+          url: "/talent/connect/createCompany",
+          data: {
+            companyName: formData.name,
+            companyAddress: formData.address,
+          },
+        });
+        toast.success("Company created successfully", { id: loadingToast });
+      }
+
+      fetchCompanies();
+      setIsFormOpen(false);
+      setEditingCompany(null);
+    } catch (error) {
+      toast.error(error.message || "Failed to save company", {
+        id: loadingToast,
+      });
     }
-
-    setIsFormOpen(false);
-    setEditingCompany(null);
-  };
-
-  // Handle delete company
-  const handleDelete = (id) => {
-    setCompanies(companies.filter((company) => company.id !== id));
   };
 
   // Handle edit company
   const handleEdit = (company) => {
     setEditingCompany(company);
     setIsFormOpen(true);
+  };
+
+  // Handle delete company
+  const handleDelete = async (id) => {
+    const loadingToast = toast.loading("Deleting company...");
+
+    try {
+      await sendRequest({
+        method: "DELETE",
+        url: `/companies/${id}`,
+      });
+      toast.success("Company deleted successfully", { id: loadingToast });
+      fetchCompanies();
+    } catch (error) {
+      toast.error("Failed to delete company", { id: loadingToast });
+    }
   };
 
   return (
@@ -123,17 +188,11 @@ const CompanyTable = () => {
                   placeholder="Search companies..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 border-gray-200 focus:border-blue-500 focus-visible:outline-none
-                            focus-visible:ring-0
-                            focus-visible:ring-offset-0 dark:border-gray-800 dark:focus:border-blue-600"
+                  className="pl-8 border-gray-200 focus:border-blue-500"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger
-                  className="w-full sm:w-40 border-blue-200 focus-visible:outline-none
-                            focus-visible:ring-0
-                            focus-visible:ring-offset-0 focus:border-blue-400 dark:border-blue-900 dark:focus:border-blue-700"
-                >
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,100 +205,110 @@ const CompanyTable = () => {
 
             <Button
               onClick={() => setIsFormOpen(true)}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+              className="w-full sm:w-auto"
+              disabled={loading}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Company
             </Button>
           </div>
 
-          {/* Table */}
-          <div className="rounded-md border border-blue-200 dark:border-blue-900">
+          {/* Table with horizontal scroll for small screens */}
+          <div className="overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
-                <TableRow className="bg-blue-50 dark:bg-blue-950">
+                <TableRow>
                   <TableHead className="w-16">SL No.</TableHead>
                   <TableHead>Company Name</TableHead>
                   <TableHead className="hidden md:table-cell">
                     Address
                   </TableHead>
-                  <TableHead className="hidden sm:table-cell">
-                    Created Date
+
+                  <TableHead className="hidden lg:table-cell">
+                    Created At
                   </TableHead>
                   <TableHead className="hidden lg:table-cell">
-                    Updated Date
+                    Updated At
                   </TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden sm:table-cell">Status</TableHead>
                   <TableHead className="w-16">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedCompanies.map((company, index) => (
-                  <TableRow
-                    key={company.id}
-                    className="hover:bg-blue-50/50 dark:hover:bg-blue-950/50"
-                  >
-                    <TableCell>
-                      {(currentPage - 1) * pageSize + index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {company.name}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {company.address}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {company.createdDate}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {company.updatedDate}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          company.status === "active"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}
-                      >
-                        {company.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(company)}>
-                            <Pencil className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(company.id)}
-                            className="text-red-600 dark:text-red-400"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {loading ? (
+                  Array.from({ length: pageSize }).map((_, index) => (
+                    <TableRowSkeleton key={index} />
+                  ))
+                ) : paginatedCompanies.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      No companies found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  paginatedCompanies.map((company, index) => (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </TableCell>
+                      <TableCell>{company?.company_name}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {company?.company_addr}
+                      </TableCell>
+
+                      <TableCell className="hidden lg:table-cell">
+                        {formatDate(company.created_at)}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {formatDate(company.update_at)}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            company.is_active === "1"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {company.is_active === "1" ? "Active" : "Inactive"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* <DropdownMenuItem
+                              onClick={() => handleEdit(company)}
+                            >
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem> */}
+                            <DropdownMenuSeparator />
+                            {/* <DropdownMenuItem
+                              onClick={() => handleDelete(company.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem> */}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
 
-          {/* Pagination and Page Size */}
+          {/* Pagination */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Rows per page:
-              </span>
+              <span className="text-sm text-gray-600">Rows per page:</span>
               <Select
                 value={pageSize.toString()}
                 onValueChange={(value) => {
@@ -247,7 +316,7 @@ const CompanyTable = () => {
                   setCurrentPage(1);
                 }}
               >
-                <SelectTrigger className="w-20 border-blue-200 focus:border-blue-400 dark:border-blue-900 dark:focus:border-blue-700">
+                <SelectTrigger className="w-20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -265,11 +334,10 @@ const CompanyTable = () => {
                 variant="outline"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="border-blue-200 hover:border-blue-400 dark:border-blue-900 dark:hover:border-blue-700"
               >
                 Previous
               </Button>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
@@ -278,7 +346,6 @@ const CompanyTable = () => {
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="border-blue-200 hover:border-blue-400 dark:border-blue-900 dark:hover:border-blue-700"
               >
                 Next
               </Button>
@@ -286,16 +353,18 @@ const CompanyTable = () => {
           </div>
         </div>
 
-        {/* Add/Edit Company Form Dialog */}
-        <AddCompanyForm
-          isOpen={isFormOpen}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingCompany(null);
-          }}
-          onSubmit={handleSubmit}
-          editData={editingCompany}
-        />
+        {isFormOpen && (
+          <AddCompanyForm
+            isOpen={isFormOpen}
+            onClose={() => {
+              setIsFormOpen(false);
+              setEditingCompany(null);
+            }}
+            onSubmit={handleSubmit}
+            editData={editingCompany}
+            loading={loading}
+          />
+        )}
       </CardContent>
     </Card>
   );

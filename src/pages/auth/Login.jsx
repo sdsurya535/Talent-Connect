@@ -248,7 +248,7 @@ const LoginPage = () => {
         })
       ).unwrap();
       toast.success("Login successful!", { id: loadingToast });
-      navigate("/dashboard");
+      navigate("/admin/company");
     } catch (err) {
       toast.error(err || "Invalid OTP", { id: loadingToast });
     } finally {
@@ -284,7 +284,8 @@ const LoginPage = () => {
           </p> */}
         </div>
         <div className="text-sm">
-          © 2022 EduSkills Foundation. All rights reserved.
+          © {new Date().getFullYear()} EduSkills Foundation. All rights
+          reserved.
         </div>
       </div>
 
@@ -309,12 +310,12 @@ const LoginPage = () => {
                 isDark ? "text-[#90CAF9]" : "text-[#1565C0]"
               }`}
             >
-              Welcome Back!
+              Welcome To Talent Connect
             </h2>
-            <p className={isDark ? "text-gray-300" : "text-gray-600"}>
+            {/* <p className={isDark ? "text-gray-300" : "text-gray-600"}>
               Don&apos;t have an account?
               <a
-                href="#"
+                href="/register"
                 className={`ml-1 ${
                   isDark
                     ? "text-[#90CAF9] hover:text-[#64B5F6]"
@@ -323,14 +324,14 @@ const LoginPage = () => {
               >
                 Create a new account now.
               </a>
-            </p>
-            <p
+            </p> */}
+            {/* <p
               className={`text-sm ${
                 isDark ? "text-gray-400" : "text-gray-500"
               }`}
             >
               It&apos;s FREE! Takes less than a minute.
-            </p>
+            </p> */}
           </div>
 
           <form onSubmit={isOtpSent ? handleVerifyOTP : handleRequestOTP}>
@@ -427,7 +428,7 @@ const LoginPage = () => {
                 )}
               </Button>
 
-              <div
+              {/* <div
                 className={`text-center mt-6 ${
                   isDark ? "text-gray-400" : "text-gray-600"
                 }`}
@@ -456,12 +457,12 @@ const LoginPage = () => {
                     Privacy Policy
                   </a>
                 </p>
-              </div>
+              </div> */}
             </div>
           </form>
 
           {/* Help Section */}
-          <div className="mt-8 text-center">
+          {/* <div className="mt-8 text-center">
             <p
               className={`text-sm ${
                 isDark ? "text-gray-400" : "text-gray-500"
@@ -479,7 +480,7 @@ const LoginPage = () => {
                 Contact Support
               </a>
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

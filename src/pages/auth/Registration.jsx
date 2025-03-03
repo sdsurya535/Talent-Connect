@@ -301,14 +301,14 @@ const RegisterForm = () => {
       <style>{customInputStyles}</style>
       <div className="flex min-h-screen">
         {/* Mobile Logo - Visible only on small screens */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 bg-blue-600 p-4 z-10">
+        <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#1565C0] dark:bg-[#0D47A1] p-4 z-10">
           <Logo />
         </div>
 
         {/* Left Panel */}
         <div className="hidden lg:flex lg:w-1/2 bg-[#1565C0] dark:bg-[#0D47A1] p-12 flex-col justify-between">
-          <Logo />
           <div className="space-y-6">
+            <Logo />
             <h2 className="text-4xl font-bold text-white">
               Hello EduSkills! 👋
             </h2>
@@ -316,7 +316,7 @@ const RegisterForm = () => {
               Join our community and start your learning journey today.
             </p>
           </div>
-          <div className="text-white/60 text-sm">
+          <div className="text-white text-sm">
             © 2022 EduSkills Foundation. All rights reserved.
           </div>
         </div>
@@ -343,11 +343,7 @@ const RegisterForm = () => {
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Create Account
               </h2>
-              {/* <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Create a new account now. It&apos;s FREE!
-                <br />
-                Takes less than a minute.
-              </p> */}
+
               <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                 Already have an account?{" "}
                 <a

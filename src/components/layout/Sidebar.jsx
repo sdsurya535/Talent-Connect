@@ -225,7 +225,7 @@ const AppSidebar = () => {
       sidebar:
         theme === "dark"
           ? "bg-gray-800 border-r border-gray-700"
-          : "bg-gray-100 border-r border-gray-200",
+          : "bg-white",
       text: theme === "dark" ? "text-gray-200" : "text-gray-700",
       hoverBg: theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200",
       activeBg: theme === "dark" ? "bg-gray-700" : "bg-gray-200",
@@ -252,46 +252,46 @@ const AppSidebar = () => {
 
   const menuItems = useMemo(
     () => [
-      {
-        title: "Dashboard",
-        path: "/dashboard",
-        roles: [ROLES.ADMIN],
-        icon: "material-symbols:dashboard",
-      },
+      // {
+      //   title: "Dashboard",
+      //   path: "/dashboard",
+      //   roles: [ROLES.ADMIN],
+      //   icon: "material-symbols:dashboard",
+      // },
       {
         title: "Company",
-        path: "/company",
+        path: "/admin/company",
         roles: [ROLES.ADMIN],
         icon: "mdi:company",
       },
       {
         title: "Job",
-        path: "/job",
+        path: "/admin/job_description",
         roles: [ROLES.ADMIN],
         icon: "material-symbols:work",
         submenu: [
           {
-            title: "Job Posts",
-            path: "/job/posts",
-            icon: "material-symbols:description",
+            title: "Create JD",
+            path: "/admin/job-posting",
+            icon: "hugeicons:job-link",
           },
           {
-            title: "Applications",
-            path: "/job/applications",
-            icon: "material-symbols:list-alt",
-          },
-          {
-            title: "Job Categories",
-            path: "/job/categories",
-            icon: "material-symbols:category",
+            title: "Manage Jobs",
+            path: "/admin/job-page",
+            icon: "cuida:edit-outline",
           },
         ],
       },
       {
-        title: "Internship",
-        path: "/internship",
+        title: "Job Summary",
+        path: "/admin/job-dashboard",
         roles: [ROLES.ADMIN],
         icon: "material-symbols:school",
+      },{
+        title: "Search Resume",
+        path: "/admin/resume-search",
+        roles: [ROLES.ADMIN],
+        icon: "material-symbols:search",
       },
     ],
     []

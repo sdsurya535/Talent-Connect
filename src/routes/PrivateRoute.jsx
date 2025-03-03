@@ -14,12 +14,12 @@ const PrivateRoute = ({ children, requiredRoles = [] }) => {
 
   // Verify both Redux state and storage state
   if (!isAuthenticated || !isStorageValid) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
   // Check if user has required roles using role service
   if (requiredRoles.length > 0 && !checkUserHasRole(requiredRoles)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to="/admin/unauthorized" replace />;
   }
 
   return children;

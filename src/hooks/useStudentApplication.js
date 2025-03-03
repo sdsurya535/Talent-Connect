@@ -52,6 +52,7 @@ export const useStudentApplications = () => {
         // Calculate stats
         const totalApplications = data.totalApplications;
         const shortlisted = data.shortlisted;
+        const filteredApplications = data.filteredApplications;
         const avgCGPA =
           students.length > 0
             ? students.reduce(
@@ -64,6 +65,7 @@ export const useStudentApplications = () => {
           total: totalApplications,
           shortlisted: shortlisted,
           avgCGPA: avgCGPA.toFixed(1),
+          filtered: filteredApplications,
         });
       } catch (err) {
         // Error handling is now managed by useApi hook

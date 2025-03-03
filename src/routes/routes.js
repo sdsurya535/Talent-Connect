@@ -1,20 +1,32 @@
 import { lazy } from "react";
 import { ROLES } from "../utils/roleService";
 import MainLayout from "../components/layout/MainLayout";
+import JobPostingForm from "@/pages/jobdescription/newjobdescription/JobPostingForm";
 
 // import ResumeViewer from "@/components/layout/resume/ResumeViewer";
-
+const JobListings = lazy(() => import("../pages/jobdescription/JobListings"));
+const Scheduler = lazy(() => import("../pages/scheduler/Scheduler"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
+const JobApplicants = lazy(() =>
+  import("../pages/jobapplicants/JobApplicants")
+);
+const ResumeSearch = lazy(() => import("../pages/resumesearch/ResumeSearch"));
+const JobDashboard = lazy(() => import("../pages/jobdashboard/JobDashboard"));
+const DashboardJobs = lazy(() =>
+  import("../pages/jobdescription/managejobs/JobsPage")
+);
+const ResumeViewer = lazy(() => import("../pages/resume/ResumeViewer"));
 const NotificationPage = lazy(() =>
   import("../pages/notificationpage/NotificationPage")
 );
-const ResumeViewer = lazy(() =>
-  import("../components/layout/resume/ResumeViewer")
-);
+
 const TicketSystem = lazy(() => import("../pages/ticket/TicketSystem"));
 const FeedbackForm = lazy(() => import("../pages/feedback/FeedbackForm"));
 const CompanyManagement = lazy(() =>
   import("../pages/company/CompanyManagement")
+);
+const JobDescriptionForm = lazy(() =>
+  import("../pages/jobdescription/JobDescriptionForm")
 );
 const RegistrationForm = lazy(() => import("../pages/auth/Registration"));
 const RoleBasedNavigation = lazy(() => "../pages/roles/RolesBasedNavigation");
@@ -29,7 +41,7 @@ const ApplicationWrapper = lazy(() =>
 
 export const routes = [
   {
-    path: "/",
+    path: "/admin",
     element: MainLayout,
     private: true,
     children: [
@@ -63,6 +75,51 @@ export const routes = [
         element: TicketSystem,
         roles: [ROLES.ADMIN],
       },
+      {
+        path: "job_description",
+        element: JobListings,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "create_job_description",
+        element: JobDescriptionForm,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "scheduler",
+        element: Scheduler,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "job-posting",
+        element: JobPostingForm,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "job-posting/:jobId",
+        element: JobPostingForm,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "job-page",
+        element: DashboardJobs,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "job-applicants/:id",
+        element: JobApplicants,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "job-dashboard",
+        element: JobDashboard,
+        roles: [ROLES.ADMIN],
+      },
+      {
+        path: "resume-search",
+        element: ResumeSearch,
+        roles: [ROLES.ADMIN],
+      },
       // {
       //   path: "feedback",
       //   element: FeedbackForm,
@@ -72,22 +129,27 @@ export const routes = [
     ],
   },
   {
-    path: "/login",
+    path: "/admin/login",
     element: Login,
     private: false,
   },
   {
-    path: "/register",
+    path: "/admin/resume/:userId",
+    element: ResumeViewer,
+    private: false,
+  },
+  {
+    path: "/admin/register",
     element: RegistrationForm,
     private: false,
   },
   {
-    path: "feedback",
+    path: "/admin/feedback",
     element: FeedbackForm,
     private: true,
   },
   {
-    path: "/navigate_roles",
+    path: "/admin/navigate_roles",
     element: RoleBasedNavigation,
     private: true,
   },

@@ -25,9 +25,9 @@ const Header = () => {
     try {
       localStorage.clear();
       sessionStorage.clear();
-      window.history.replaceState(null, "", "/login");
-      navigate("/login", { replace: true });
-      window.history.pushState(null, "", "/login");
+      window.history.replaceState(null, "", "/admin/login");
+      navigate("/admin/login", { replace: true });
+      window.history.pushState(null, "", "/admin/login");
       window.addEventListener("popstate", () => {
         window.history.forward();
       });
@@ -106,7 +106,7 @@ const Header = () => {
                 </Popover>
               ) : (
                 <>
-                  <Link to="/login">
+                  <Link to="/talent-login">
                     <Button
                       variant="ghost"
                       className="text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

@@ -42,30 +42,6 @@ export const isValidRole = (role) => {
   return Object.values(ROLES).includes(role);
 };
 
-// Get highest priority role (assuming admin > user > guest)
-export const getHighestRole = (userRoles = []) => {
-  if (!Array.isArray(userRoles)) {
-    userRoles = [userRoles];
-  }
-
-  if (userRoles.includes(ROLES.ADMIN)) return ROLES.ADMIN;
-  if (userRoles.includes(ROLES.USER)) return ROLES.USER;
-  return ROLES.GUEST;
-};
-
-// Role-based permission checking
-export const PERMISSIONS = {
-  [ROLES.ADMIN]: ["read", "write", "delete", "manage"],
-  [ROLES.USER]: ["read", "write"],
-  [ROLES.GUEST]: ["read"],
-};
-
-export const hasPermission = (permission) => {
-  const currentRoles = getCurrentUserRoles();
-  const highestRole = getHighestRole(currentRoles);
-  return PERMISSIONS[highestRole]?.includes(permission) || false;
-};
-
 // Export everything as a service object
 const roleService = {
   ROLES,
@@ -73,9 +49,6 @@ const roleService = {
   getCurrentUserRoles,
   checkUserHasRole,
   isValidRole,
-  getHighestRole,
-  PERMISSIONS,
-  hasPermission,
 };
 
 export default roleService;

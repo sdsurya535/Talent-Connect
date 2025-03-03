@@ -1,312 +1,326 @@
-import React, { useRef, useState } from "react";
-import PropTypes from "prop-types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Download,
-  Mail,
-  Phone,
-  MapPin,
-  Github,
-  Linkedin,
-  Calendar,
-  GraduationCap,
-  Briefcase,
-  Loader2,
-  User,
-  Award,
-  BookOpen,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Mail, Phone, MapPin, Globe, Printer } from "lucide-react";
 
-const ResumeViewer = ({
-  studentData = {
-    name: "John Smith",
-    emailid: "john.smith@example.com",
-    mobile: "+91 9876543210",
-    branch: "Computer Science",
-    gender: "Male",
-    final_year: "2024",
-    btech_cgpa: "8.9",
-    institute: "Indian Institute of Technology",
-    state: "Maharashtra",
-    status: "shortlisted",
-    skills: ["JavaScript", "React", "Node.js", "Python", "Java", "Git"],
-    languages: ["English", "Hindi"],
-    achievements: [
-      "Best Project Award at College Tech Fest",
-      "1st Prize in National Coding Competition",
-      "Published research paper in IEEE conference",
-    ],
-  },
-}) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const resumeRef = useRef(null);
-
-  const generatePDF = async () => {
-    try {
-      setIsGenerating(true);
-
-      // Dynamically import required libraries
-      const domtoimage = (await import("dom-to-image")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const element = resumeRef.current;
-      const padding = 10; // padding in mm
-
-      // Calculate dimensions
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Convert to image with higher quality
-      const image = await domtoimage.toPng(element, {
-        quality: 1,
-        scale: 2,
-        style: {
-          transform: "scale(1)",
-          transformOrigin: "top left",
-          width: `${element.offsetWidth}px`,
-          height: `${element.offsetHeight}px`,
-          background: "white",
-        },
-      });
-
-      // Calculate dimensions to fit A4 with padding
-      const imgWidth = pdfWidth - 2 * padding;
-      const imgHeight = (element.offsetHeight * imgWidth) / element.offsetWidth;
-
-      // Add image to PDF
-      pdf.addImage(
-        image,
-        "PNG",
-        padding,
-        padding,
-        imgWidth,
-        imgHeight,
-        undefined,
-        "FAST"
-      );
-
-      // Add additional pages if content overflows
-      if (imgHeight > pdfHeight - 2 * padding) {
-        let remainingHeight = imgHeight;
-        let currentPage = 1;
-
-        while (remainingHeight > pdfHeight - 2 * padding) {
-          pdf.addPage();
-          currentPage++;
-
-          pdf.addImage(
-            image,
-            "PNG",
-            padding,
-            padding - (pdfHeight - 2 * padding) * (currentPage - 1),
-            imgWidth,
-            imgHeight,
-            undefined,
-            "FAST"
-          );
-
-          remainingHeight -= pdfHeight - 2 * padding;
-        }
-      }
-
-      // Save the PDF
-      pdf.save(
-        `${studentData.name.toLowerCase().replace(" ", "_")}_resume.pdf`
-      );
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-    } finally {
-      setIsGenerating(false);
-    }
+const Resume = () => {
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Resume Preview</h1>
-        <Button onClick={generatePDF} disabled={isGenerating} className="w-40">
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
-            </>
-          )}
+    <>
+      {/* Print Styles */}
+      <style>
+        {`
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            
+            body {
+              background: white;
+              margin: 0;
+              padding: 0;
+            }
+
+            #resume, #resume * {
+              visibility: visible;
+            }
+
+            #resume {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100vh;
+              padding: 0;
+              margin: 0;
+            }
+
+            .no-print {
+              display: none !important;
+            }
+
+            /* Adjust font sizes for print */
+            #resume h1 { font-size: 24px !important; }
+            #resume h2 { font-size: 18px !important; }
+            #resume p, #resume li { font-size: 12px !important; }
+            #resume .text-lg { font-size: 14px !important; }
+            
+            /* Adjust spacing for print */
+            #resume .p-6 { padding: 1rem !important; }
+            #resume .mb-8 { margin-bottom: 1rem !important; }
+            #resume .mb-4 { margin-bottom: 0.5rem !important; }
+            #resume .space-y-2 > * + * { margin-top: 0.25rem !important; }
+            #resume .gap-6 { gap: 1rem !important; }
+            
+            /* Ensure proper column widths */
+            #resume .w-1/3 { width: 30% !important; }
+            #resume .w-2/3 { width: 70% !important; }
+            
+            /* Remove shadows and borders for better printing */
+            #resume { box-shadow: none !important; }
+          }
+        `}
+      </style>
+
+      <div className="max-w-5xl mx-auto p-4">
+        <Button
+          onClick={handlePrint}
+          className="mb-4 bg-indigo-600 hover:bg-indigo-700 no-print"
+        >
+          <Printer className="mr-2 h-4 w-4" />
+          Print Resume
         </Button>
-      </div>
 
-      <div ref={resumeRef} className="bg-white p-8 shadow-lg rounded-lg">
-        {/* Header Section */}
-        <div className="text-center space-y-4 mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">
-            {studentData.name}
-          </h2>
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <Mail className="h-4 w-4" />
-              {studentData.emailid}
-            </div>
-            <div className="flex items-center gap-1">
-              <Phone className="h-4 w-4" />
-              {studentData.mobile}
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              {studentData.state}
-            </div>
-          </div>
-          <div className="flex justify-center gap-4">
-            <Badge variant="outline" className="px-4">
-              <User className="h-3 w-3 mr-1" />
-              {studentData.gender}
-            </Badge>
-            <Badge
-              variant={
-                studentData.status === "shortlisted"
-                  ? "success"
-                  : studentData.status === "pending"
-                  ? "warning"
-                  : "destructive"
-              }
-              className="px-4"
-            >
-              {studentData.status.charAt(0).toUpperCase() +
-                studentData.status.slice(1)}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Education Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <GraduationCap className="h-6 w-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-gray-800">Education</h3>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-semibold text-gray-800">
-                  {studentData.branch}
-                </h4>
-                <p className="text-gray-600">{studentData.institute}</p>
+        {/* Resume Content */}
+        <div
+          id="resume"
+          className="flex gap-6 bg-white rounded-lg shadow-xl overflow-hidden"
+        >
+          {/* Left Column */}
+          <div className="w-1/3 bg-gradient-to-b from-indigo-900 to-indigo-700 text-white p-6">
+            {/* Profile Image */}
+            <div className="mb-6">
+              <div className="bg-white p-1 rounded-full w-24 h-24 mx-auto mb-4">
+                <img
+                  src="/api/placeholder/150/150"
+                  alt="Profile"
+                  className="rounded-full w-full h-full object-cover"
+                />
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  {studentData.final_year}
+            </div>
+
+            {/* Contact Info */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3 border-b border-indigo-500 pb-2">
+                CONTACT
+              </h2>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-indigo-100 text-sm">
+                  <Phone size={14} />
+                  <span>+123-456-7890</span>
                 </div>
-                <Badge
-                  variant={
-                    parseFloat(studentData.btech_cgpa) >= 8
-                      ? "success"
-                      : "default"
-                  }
-                >
-                  CGPA: {studentData.btech_cgpa}
-                </Badge>
+                <div className="flex items-center gap-2 text-indigo-100 text-sm">
+                  <Mail size={14} />
+                  <span>hello@example.com</span>
+                </div>
+                <div className="flex items-center gap-2 text-indigo-100 text-sm">
+                  <MapPin size={14} />
+                  <span>123 Main St, Any City</span>
+                </div>
+                <div className="flex items-center gap-2 text-indigo-100 text-sm">
+                  <Globe size={14} />
+                  <span>www.example.com</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Skills Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="h-6 w-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-gray-800">
-              Skills & Languages
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Technical Skills
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {studentData.skills?.map((skill, index) => (
-                  <Badge key={index} variant="secondary">
+            {/* Education */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3 border-b border-indigo-500 pb-2">
+                EDUCATION
+              </h2>
+              <div className="mb-3">
+                <div className="font-bold text-indigo-200 text-sm">
+                  2029 - 2030
+                </div>
+                <div className="font-semibold text-sm">CENTRAL UNIVERSITY</div>
+                <div className="text-indigo-100 text-sm">
+                  Master of Business
+                </div>
+              </div>
+              <div>
+                <div className="font-bold text-indigo-200 text-sm">
+                  2025 - 2029
+                </div>
+                <div className="font-semibold text-sm">CENTRAL UNIVERSITY</div>
+                <div className="text-indigo-100 text-sm">
+                  Bachelor of Business
+                </div>
+                <div className="text-indigo-200 text-sm">GPA: 3.8 / 4.0</div>
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3 border-b border-indigo-500 pb-2">
+                SKILLS
+              </h2>
+              <ul className="space-y-1 text-sm">
+                {[
+                  "Project Management",
+                  "Public Relations",
+                  "Teamwork",
+                  "Time Management",
+                  "Leadership",
+                  "Communication",
+                  "Critical Thinking",
+                ].map((skill) => (
+                  <li key={skill} className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-indigo-300 rounded-full"></div>
                     {skill}
-                  </Badge>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-800 mb-2">Languages</h4>
-              <div className="flex flex-wrap gap-2">
-                {studentData.languages?.map((language, index) => (
-                  <Badge key={index} variant="outline">
+
+            {/* Languages */}
+            <div>
+              <h2 className="text-lg font-bold mb-3 border-b border-indigo-500 pb-2">
+                LANGUAGES
+              </h2>
+              <ul className="space-y-1 text-sm">
+                {[
+                  "English (Fluent)",
+                  "French (Fluent)",
+                  "German (Basic)",
+                  "Spanish (Intermediate)",
+                ].map((language) => (
+                  <li key={language} className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-indigo-300 rounded-full"></div>
                     {language}
-                  </Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="w-2/3 p-6 bg-gray-50">
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-indigo-900">
+                MICHAEL ANDERSON
+              </h1>
+              <h2 className="text-xl text-indigo-600">MARKETING MANAGER</h2>
+            </div>
+
+            {/* Profile */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-3 text-indigo-900 border-b border-indigo-200 pb-2">
+                PROFILE
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                Experienced marketing professional with a proven track record in
+                developing and executing comprehensive marketing strategies.
+                Skilled in team leadership, brand management, and digital
+                marketing initiatives. Demonstrates strong analytical abilities
+                and a data-driven approach to optimizing marketing campaigns and
+                achieving business objectives.
+              </p>
+            </div>
+
+            {/* Work Experience */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-3 text-indigo-900 border-b border-indigo-200 pb-2">
+                WORK EXPERIENCE
+              </h2>
+
+              {/* Current Position */}
+              <div className="mb-4">
+                <div className="flex justify-between mb-1">
+                  <h3 className="text-lg font-bold text-indigo-800">
+                    Digital Studio
+                  </h3>
+                  <span className="text-indigo-600 text-sm">
+                    2030 - PRESENT
+                  </span>
+                </div>
+                <div className="text-base text-indigo-700 mb-2">
+                  Marketing Manager & Specialist
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {[
+                    "Lead and execute comprehensive marketing strategies aligned with company objectives",
+                    "Manage and mentor a team of marketing professionals",
+                    "Monitor and optimize brand consistency across all channels",
+                  ].map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-gray-700"
+                    >
+                      <div className="w-1 h-1 bg-indigo-400 rounded-full mt-2"></div>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Previous Position */}
+              <div className="mb-4">
+                <div className="flex justify-between mb-1">
+                  <h3 className="text-lg font-bold text-indigo-800">
+                    Creative Agency
+                  </h3>
+                  <span className="text-indigo-600 text-sm">2025 - 2029</span>
+                </div>
+                <div className="text-base text-indigo-700 mb-2">
+                  Marketing Manager & Specialist
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {[
+                    "Developed and managed marketing budgets and ROI optimization",
+                    "Conducted market research and competitive analysis",
+                    "Maintained brand consistency across marketing channels",
+                  ].map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-gray-700"
+                    >
+                      <div className="w-1 h-1 bg-indigo-400 rounded-full mt-2"></div>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* References */}
+            <div>
+              <h2 className="text-xl font-bold mb-3 text-indigo-900 border-b border-indigo-200 pb-2">
+                REFERENCES
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  {
+                    name: "Emily Parker",
+                    position: "Digital Studio / CTO",
+                    phone: "123-456-7890",
+                    email: "emily@example.com",
+                  },
+                  {
+                    name: "James Wilson",
+                    position: "Creative Agency / CEO",
+                    phone: "123-456-7890",
+                    email: "james@example.com",
+                  },
+                ].map((reference, index) => (
+                  <div key={index} className="text-sm">
+                    <h3 className="font-bold text-indigo-800">
+                      {reference.name}
+                    </h3>
+                    <div className="text-indigo-600">{reference.position}</div>
+                    <div className="text-gray-700">
+                      Phone: {reference.phone}
+                    </div>
+                    <div className="text-gray-700">
+                      Email: {reference.email}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Achievements Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="h-6 w-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-gray-800">Achievements</h3>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <ul className="space-y-2">
-              {studentData.achievements?.map((achievement, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-1">•</span>
-                  <span className="text-gray-700">{achievement}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Professional Summary */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Briefcase className="h-6 w-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-gray-800">
-              Professional Summary
-            </h3>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-gray-700">
-              A dedicated {studentData.branch} student with strong academic
-              performance (CGPA: {studentData.btech_cgpa}) and practical
-              experience in various technical projects. Skilled in multiple
-              programming languages and technologies, with a focus on delivering
-              high-quality solutions.
-            </p>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-ResumeViewer.propTypes = {
-  studentData: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    emailid: PropTypes.string.isRequired,
-    mobile: PropTypes.string.isRequired,
-    branch: PropTypes.string.isRequired,
-    gender: PropTypes.string.isRequired,
-    final_year: PropTypes.string.isRequired,
-    btech_cgpa: PropTypes.string.isRequired,
-    institute: PropTypes.string.isRequired,
-    state: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
-    skills: PropTypes.arrayOf(PropTypes.string),
-    languages: PropTypes.arrayOf(PropTypes.string),
-    achievements: PropTypes.arrayOf(PropTypes.string),
-  }).isRequired,
-};
-
-export default ResumeViewer;
+export default Resume;
